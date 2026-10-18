@@ -1,0 +1,839 @@
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Prize-Giving Name Pronouncer</title>
+
+  <style>
+    :root {
+      color-scheme: light dark;
+      --bg: #f4f6fb;
+      --card: #ffffff;
+      --text: #20263a;
+      --muted: #687087;
+      --border: #dce1ed;
+      --primary: #5145cd;
+      --primary-hover: #4035ac;
+      --highlight: #eeebff;
+      --success: #137547;
+    }
+
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg: #151824;
+        --card: #202434;
+        --text: #f3f4fa;
+        --muted: #b5bbcd;
+        --border: #3b4258;
+        --primary: #a69cff;
+        --primary-hover: #c2baff;
+        --highlight: #302b50;
+        --success: #72e0a9;
+      }
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--text);
+      font-family: Arial, Helvetica, sans-serif;
+      line-height: 1.5;
+    }
+
+    header {
+      position: sticky;
+      top: 0;
+      z-index: 10;
+      background: var(--card);
+      border-bottom: 1px solid var(--border);
+      padding: 16px;
+    }
+
+    .header-inner,
+    main {
+      max-width: 950px;
+      margin: 0 auto;
+    }
+
+    h1 {
+      margin: 0 0 5px;
+      font-size: clamp(1.35rem, 4vw, 2rem);
+    }
+
+    .subtitle {
+      margin: 0 0 14px;
+      color: var(--muted);
+      font-size: 0.9rem;
+    }
+
+    .controls {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(145px, 1fr));
+      gap: 10px;
+    }
+
+    input[type="search"],
+    select {
+      width: 100%;
+      min-height: 44px;
+      padding: 10px;
+      border: 1px solid var(--border);
+      border-radius: 9px;
+      background: var(--card);
+      color: var(--text);
+      font-size: 1rem;
+    }
+
+    .filter {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      min-height: 44px;
+      font-size: 0.92rem;
+    }
+
+    .filter input {
+      width: 18px;
+      height: 18px;
+      accent-color: var(--primary);
+    }
+
+    main {
+      padding: 20px 14px 50px;
+    }
+
+    .status {
+      color: var(--muted);
+      font-size: 0.9rem;
+      margin-bottom: 16px;
+    }
+
+    .grade {
+      margin: 0 0 25px;
+    }
+
+    .grade-heading {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 10px;
+    }
+
+    h2 {
+      margin: 0;
+      font-size: 1.25rem;
+    }
+
+    .learner-count {
+      display: block;
+      color: var(--muted);
+      font-size: 0.8rem;
+      font-weight: normal;
+    }
+
+    .learner-list {
+      display: grid;
+      gap: 9px;
+    }
+
+    .learner {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 13px;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      background: var(--card);
+    }
+
+    .learner.highlighted {
+      border-left: 5px solid var(--primary);
+      background: var(--highlight);
+    }
+
+    .learner-info {
+      min-width: 0;
+    }
+
+    .class-label {
+      display: block;
+      color: var(--muted);
+      font-size: 0.78rem;
+      margin-bottom: 2px;
+    }
+
+    .learner-name {
+      font-weight: 700;
+      overflow-wrap: anywhere;
+    }
+
+    .phonetic {
+      color: var(--muted);
+      font-size: 0.85rem;
+      overflow-wrap: anywhere;
+    }
+
+    button {
+      border: 0;
+      border-radius: 9px;
+      padding: 10px 14px;
+      min-height: 42px;
+      font-size: 0.9rem;
+      font-weight: 700;
+      cursor: pointer;
+      background: var(--primary);
+      color: white;
+      flex-shrink: 0;
+    }
+
+    button:hover {
+      filter: brightness(0.92);
+    }
+
+    button:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    .play-all {
+      min-height: 38px;
+      padding: 8px 11px;
+      font-size: 0.82rem;
+    }
+
+    .stop-button {
+      background: #a83248;
+      margin-bottom: 15px;
+    }
+
+    button:focus-visible,
+    input:focus-visible,
+    select:focus-visible {
+      outline: 3px solid #e2a72e;
+      outline-offset: 3px;
+    }
+
+    .empty,
+    .notice {
+      padding: 18px;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      background: var(--card);
+    }
+
+    .notice {
+      margin-bottom: 15px;
+    }
+
+    [hidden] {
+      display: none !important;
+    }
+
+    @media (max-width: 480px) {
+      .learner {
+        padding: 11px;
+      }
+
+      .learner-name {
+        font-size: 0.95rem;
+      }
+
+      .phonetic {
+        font-size: 0.8rem;
+      }
+
+      button {
+        padding: 9px 11px;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <header>
+    <div class="header-inner">
+      <h1>Prize-Giving Name Pronouncer</h1>
+      <p class="subtitle">
+        The voice reads the phonetic spelling to help approximate each name's pronunciation.
+      </p>
+
+      <div class="controls">
+        <input
+          id="search"
+          type="search"
+          placeholder="Search learner or class..."
+          aria-label="Search learners"
+        >
+
+        <label class="filter">
+          <input id="highlightedOnly" type="checkbox" checked>
+          Highlighted only
+        </label>
+
+        <select id="voiceSelect" aria-label="Select speaking voice">
+          <option value="auto">Automatic voice selection</option>
+        </select>
+
+        <select id="speedSelect" aria-label="Select speaking speed">
+          <option value="0.5" selected>Slow — 0.5×</option>
+          <option value="0.7">Gentle — 0.7×</option>
+          <option value="0.9">Normal — 0.9×</option>
+          <option value="1">Fast — 1.0×</option>
+        </select>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    <div id="voiceNotice" class="notice" hidden>
+      Speech voices are not available yet. Try opening this page in Safari or
+      Chrome, checking your device's speech settings, and reloading the page.
+    </div>
+
+    <button id="stopButton" class="stop-button" type="button">
+      Stop speaking
+    </button>
+
+    <p id="status" class="status" aria-live="polite">
+      Loading learners...
+    </p>
+
+    <div id="grades"></div>
+
+    <div id="emptyMessage" class="empty" hidden>
+      No learners match your search. Try another name or switch off
+      “Highlighted only”.
+    </div>
+  </main>
+
+  <script>
+    "use strict";
+
+    /*
+      Learner information:
+      className = learner's class
+      name = learner's displayed name
+      phonetic = pronunciation guide spoken by the browser
+      highlighted = whether the learner appears in the highlighted list
+    */
+
+    const learners = [
+      {
+        className: "4A",
+        name: "Iminathi Khanyile",
+        phonetic: "ee-mee-NAH-tee kah-NYEE-leh",
+        highlighted: true
+      },
+      {
+        className: "4A",
+        name: "Mthuthuzeli Kona",
+        phonetic: "m-too-too-ZEH-lee KOH-nah",
+        highlighted: true
+      },
+      {
+        className: "4A",
+        name: "Wandile Pilime",
+        phonetic: "wahn-DEE-leh pee-LEE-meh",
+        highlighted: true
+      },
+      {
+        className: "4B",
+        name: "Melokuhle Maseko",
+        phonetic: "meh-loh-KOO-hleh mah-SEH-koh",
+        highlighted: true
+      },
+      {
+        className: "4B",
+        name: "David Bhengu",
+        phonetic: "DAY-vid BENG-goo",
+        highlighted: true
+      },
+      {
+        className: "4C",
+        name: "Ariana Nagin",
+        phonetic: "ah-ree-AH-nah NAH-gin",
+        highlighted: true
+      },
+      {
+        className: "4C",
+        name: "Obakhe Mbatha",
+        phonetic: "oh-BAH-keh m-BAH-tah",
+        highlighted: true
+      },
+      {
+        className: "4C",
+        name: "Kashvi Pillay",
+        phonetic: "KASH-vee PIL-ay",
+        highlighted: true
+      },
+      {
+        className: "4C",
+        name: "Gomolemo Lekalakala",
+        phonetic: "goh-moh-LEH-moh leh-kah-lah-KAH-lah",
+        highlighted: true
+      },
+      {
+        className: "4C",
+        name: "Amarah Bikirwa",
+        phonetic: "ah-MAH-rah bee-KEER-wah",
+        highlighted: true
+      },
+      {
+        className: "4E",
+        name: "Tinashe Chitando",
+        phonetic: "tee-NAH-sheh chee-TAHN-doh",
+        highlighted: true
+      },
+      {
+        className: "4E",
+        name: "Tawana Takarinda",
+        phonetic: "tah-WAH-nah tah-kah-REEN-dah",
+        highlighted: true
+      },
+      {
+        className: "4E",
+        name: "Rorisang Mashapu",
+        phonetic: "roh-ree-SAHNG mah-SHAH-poo",
+        highlighted: true
+      },
+      {
+        className: "4E",
+        name: "Kabo Morometsi",
+        phonetic: "KAH-boh moh-roh-MEH-tsee",
+        highlighted: true
+      },
+      {
+        className: "4F",
+        name: "Wezi Mampane",
+        phonetic: "WEH-zee mahm-PAH-neh",
+        highlighted: true
+      },
+      {
+        className: "5B",
+        name: "Kunashe Samuriwo",
+        phonetic: "koo-NAH-sheh sah-moo-REE-woh",
+        highlighted: true
+      },
+      {
+        className: "5E",
+        name: "Reagile Moatlhodi",
+        phonetic: "reh-ah-KHEE-leh mwah-TLHOH-dee",
+        highlighted: true
+      },
+      {
+        className: "5E",
+        name: "Amukelani Caluza",
+        phonetic: "ah-moo-keh-LAH-nee tsk-ah-LOO-zah",
+        highlighted: true
+      },
+      {
+        className: "5E",
+        name: "Demoya Tchouya",
+        phonetic: "deh-MOY-ah CHOO-yah",
+        highlighted: true
+      },
+      {
+        className: "5E",
+        name: "Ntsika Mtshutshwane",
+        phonetic: "n-TSEE-kah m-tshoo-TSHWAH-neh",
+        highlighted: true
+      },
+      {
+        className: "5E",
+        name: "Muhlayisi Mathebula",
+        phonetic: "moo-hlah-YEE-see mah-teh-BOO-lah",
+        highlighted: true
+      },
+      {
+        className: "6F",
+        name: "Naye Sithole",
+        phonetic: "NAH-yeh see-TOH-leh",
+        highlighted: true
+      },
+      {
+        className: "7C",
+        name: "Khumo Mahlaba",
+        phonetic: "KOO-moh mah-HLAH-bah",
+        highlighted: true
+      },
+      {
+        className: "7C",
+        name: "Aliyama Mkheswa",
+        phonetic: "ah-lee-YAH-mah m-KEH-swah",
+        highlighted: true
+      },
+      {
+        className: "7C",
+        name: "Tawananyasha Moyo",
+        phonetic: "tah-wah-nah-NYAH-shah MOH-yoh",
+        highlighted: true
+      },
+      {
+        className: "7C",
+        name: "Mpilenhle Mnisi",
+        phonetic: "m-pee-LEN-hleh m-NEE-see",
+        highlighted: true
+      },
+      {
+        className: "7E",
+        name: "Yayixie Gao",
+        phonetic: "yah-YEE-shee GOW",
+        highlighted: true
+      },
+      {
+        className: "7E",
+        name: "Zanda Ntlokwana",
+        phonetic: "ZAHN-dah n-tloh-KWAH-nah",
+        highlighted: true
+      },
+      {
+        className: "7E",
+        name: "Khosi Moshoeshoe",
+        phonetic: "KOH-see moh-SHWEH-shweh",
+        highlighted: true
+      }
+    ];
+
+    const searchInput = document.getElementById("search");
+    const highlightedOnly = document.getElementById("highlightedOnly");
+    const voiceSelect = document.getElementById("voiceSelect");
+    const speedSelect = document.getElementById("speedSelect");
+    const gradesContainer = document.getElementById("grades");
+    const statusElement = document.getElementById("status");
+    const emptyMessage = document.getElementById("emptyMessage");
+    const voiceNotice = document.getElementById("voiceNotice");
+    const stopButton = document.getElementById("stopButton");
+
+    const preferredLanguages = [
+      "en-ZA",
+      "zu",
+      "xh",
+      "st",
+      "tn",
+      "af",
+      "en-NG",
+      "en-KE",
+      "en-TZ",
+      "en-GB"
+    ];
+
+    let availableVoices = [];
+    let playbackToken = 0;
+    let currentlySpeaking = false;
+
+    function normalise(value) {
+      return value
+        .toLocaleLowerCase()
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "")
+        .trim();
+    }
+
+    function loadVoices() {
+      if (!("speechSynthesis" in window)) {
+        voiceNotice.hidden = false;
+        statusElement.textContent =
+          "Text-to-speech is not supported by this browser.";
+        document.querySelectorAll("button").forEach(button => {
+          if (button.id !== "stopButton") button.disabled = true;
+        });
+        return;
+      }
+
+      availableVoices = window.speechSynthesis.getVoices();
+
+      const previousValue = voiceSelect.value;
+      voiceSelect.innerHTML =
+        '<option value="auto">Automatic voice selection</option>';
+
+      availableVoices.forEach((voice, index) => {
+        const option = document.createElement("option");
+        option.value = String(index);
+        option.textContent = `${voice.name} (${voice.lang})`;
+        voiceSelect.appendChild(option);
+      });
+
+      if (
+        previousValue !== "auto" &&
+        Number(previousValue) < availableVoices.length
+      ) {
+        voiceSelect.value = previousValue;
+      }
+
+      voiceNotice.hidden = availableVoices.length > 0;
+    }
+
+    function chooseVoice() {
+      if (voiceSelect.value !== "auto") {
+        return availableVoices[Number(voiceSelect.value)] || null;
+      }
+
+      for (const preferred of preferredLanguages) {
+        const match = availableVoices.find(voice => {
+          const language = voice.lang.toLowerCase();
+          const wanted = preferred.toLowerCase();
+
+          return language === wanted ||
+            language.startsWith(wanted + "-") ||
+            (wanted.length === 2 && language.startsWith(wanted));
+        });
+
+        if (match) return match;
+      }
+
+      return availableVoices.find(voice =>
+        voice.lang.toLowerCase().startsWith("en")
+      ) || availableVoices[0] || null;
+    }
+
+    function speakLearner(learner) {
+      if (!("speechSynthesis" in window)) return;
+
+      playbackToken++;
+      window.speechSynthesis.cancel();
+
+      const utterance = new SpeechSynthesisUtterance(
+        learner.phonetic
+          .toLocaleLowerCase()
+          .replace(/-/g, " ")
+      );
+
+      const voice = chooseVoice();
+      if (voice) utterance.voice = voice;
+
+      utterance.rate = Number(speedSelect.value);
+      utterance.pitch = 1;
+      utterance.volume = 1;
+
+      currentlySpeaking = true;
+      statusElement.textContent = `Speaking: ${learner.name}, Class ${learner.className}`;
+
+      utterance.onend = () => {
+        currentlySpeaking = false;
+        statusElement.textContent = `Finished: ${learner.name}`;
+      };
+
+      utterance.onerror = event => {
+        currentlySpeaking = false;
+        if (event.error !== "canceled" && event.error !== "interrupted") {
+          statusElement.textContent =
+            "The selected voice could not speak. Try another voice.";
+        }
+      };
+
+      window.speechSynthesis.speak(utterance);
+    }
+
+    function stopSpeaking() {
+      playbackToken++;
+
+      if ("speechSynthesis" in window) {
+        window.speechSynthesis.cancel();
+      }
+
+      currentlySpeaking = false;
+      statusElement.textContent = "Playback stopped.";
+    }
+
+    async function playGrade(grade, button) {
+      if (!("speechSynthesis" in window)) return;
+
+      const token = ++playbackToken;
+
+      window.speechSynthesis.cancel();
+      currentlySpeaking = true;
+
+      const names = getFilteredLearners().filter(learner =>
+        learner.className.startsWith(grade)
+      );
+
+      if (names.length === 0) {
+        statusElement.textContent = "No learners in this grade match the filters.";
+        currentlySpeaking = false;
+        return;
+      }
+
+      button.disabled = true;
+
+      try {
+        for (let i = 0; i < names.length; i++) {
+          if (token !== playbackToken) break;
+
+          const learner = names[i];
+          statusElement.textContent =
+            `Playing ${i + 1} of ${names.length}: ${learner.name}`;
+
+          await speakAndWait(learner, token);
+
+          if (token !== playbackToken) break;
+
+          if (i < names.length - 1) {
+            await delay(2000);
+          }
+        }
+      } finally {
+        if (token === playbackToken) {
+          currentlySpeaking = false;
+          statusElement.textContent = "Grade playback complete.";
+        }
+        button.disabled = false;
+      }
+    }
+
+    function speakAndWait(learner, token) {
+      return new Promise(resolve => {
+        if (token !== playbackToken) {
+          resolve();
+          return;
+        }
+
+        const utterance = new SpeechSynthesisUtterance(
+          learner.phonetic.toLocaleLowerCase().replace(/-/g, " ")
+        );
+
+        const voice = chooseVoice();
+        if (voice) utterance.voice = voice;
+
+        utterance.rate = Number(speedSelect.value);
+        utterance.pitch = 1;
+        utterance.volume = 1;
+
+        const finish = () => resolve();
+
+        utterance.onend = finish;
+        utterance.onerror = finish;
+
+        window.speechSynthesis.speak(utterance);
+      });
+    }
+
+    function delay(milliseconds) {
+      return new Promise(resolve => setTimeout(resolve, milliseconds));
+    }
+
+    function getFilteredLearners() {
+      const query = normalise(searchInput.value);
+
+      return learners.filter(learner => {
+        const matchesSearch =
+          normalise(learner.name).includes(query) ||
+          normalise(learner.className).includes(query) ||
+          normalise(learner.phonetic).includes(query);
+
+        const matchesHighlight =
+          !highlightedOnly.checked || learner.highlighted;
+
+        return matchesSearch && matchesHighlight;
+      });
+    }
+
+    function renderLearners() {
+      const filtered = getFilteredLearners();
+      gradesContainer.replaceChildren();
+
+      const grades = [...new Set(
+        learners.map(learner => learner.className.charAt(0))
+      )].sort();
+
+      grades.forEach(grade => {
+        const gradeLearners = filtered.filter(learner =>
+          learner.className.startsWith(grade)
+        );
+
+        if (gradeLearners.length === 0) return;
+
+        const section = document.createElement("section");
+        section.className = "grade";
+
+        const heading = document.createElement("div");
+        heading.className = "grade-heading";
+
+        const title = document.createElement("h2");
+        title.textContent = `Grade ${grade}`;
+
+        const count = document.createElement("span");
+        count.className = "learner-count";
+        count.textContent =
+          `${gradeLearners.length} learner${gradeLearners.length === 1 ? "" : "s"}`;
+
+        title.appendChild(count);
+
+        const playAll = document.createElement("button");
+        playAll.type = "button";
+        playAll.className = "play-all";
+        playAll.textContent = "▶ Play grade";
+        playAll.setAttribute("aria-label", `Play all visible Grade ${grade} names`);
+        playAll.addEventListener("click", () => playGrade(grade, playAll));
+
+        heading.append(title, playAll);
+
+        const list = document.createElement("div");
+        list.className = "learner-list";
+
+        gradeLearners.forEach(learner => {
+          const row = document.createElement("article");
+          row.className = "learner";
+
+          if (learner.highlighted) {
+            row.classList.add("highlighted");
+          }
+
+          const info = document.createElement("div");
+          info.className = "learner-info";
+
+          const classLabel = document.createElement("span");
+          classLabel.className = "class-label";
+          classLabel.textContent = `Class ${learner.className}`;
+
+          const name = document.createElement("div");
+          name.className = "learner-name";
+          name.textContent = learner.name;
+
+          const phonetic = document.createElement("div");
+          phonetic.className = "phonetic";
+          phonetic.textContent = learner.phonetic;
+
+          info.append(classLabel, name, phonetic);
+
+          const play = document.createElement("button");
+          play.type = "button";
+          play.textContent = "▶ Play";
+          play.setAttribute("aria-label", `Pronounce ${learner.name}`);
+          play.addEventListener("click", () => speakLearner(learner));
+
+          row.append(info, play);
+          list.appendChild(row);
+        });
+
+        section.append(heading, list);
+        gradesContainer.appendChild(section);
+      });
+
+      statusElement.textContent =
+        `${filtered.length} of ${learners.length} learners shown.`;
+
+      emptyMessage.hidden = filtered.length !== 0;
+    }
+
+    searchInput.addEventListener("input", renderLearners);
+    highlightedOnly.addEventListener("change", renderLearners);
+    stopButton.addEventListener("click", stopSpeaking);
+
+    if ("speechSynthesis" in window) {
+      window.speechSynthesis.onvoiceschanged = loadVoices;
+    }
+
+    loadVoices();
+    renderLearners();
+  </script>
+</body>
+</html>
+```
